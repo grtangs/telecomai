@@ -1,0 +1,19 @@
+[project]
+name = "telecom-agent"
+version = "0.1.0"
+description = "Telecom Support Agent using LangGraph, Gradio, and DeepSeek"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain>=0.2.0",
+    "langchain-community>=0.2.0",
+    "langchain-openai>=0.1.0",
+    "langgraph>=0.1.0",
+    "gradio>=4.0.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
