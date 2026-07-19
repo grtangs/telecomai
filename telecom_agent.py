@@ -12,7 +12,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 
 # Import database module
-import database
+import telecom_db
 
 # Load environment variables
 load_dotenv()
@@ -167,7 +167,7 @@ def billing_handler_node(state: AgentState) -> Dict[str, Any]:
     logs.append("[BILLING] Querying SQLite billing records for customer...")
     customer_id = state.get("customer_id", "CUST-9948")
     
-    bill = database.get_bill(customer_id)
+    bill = telecom_db.get_bill(customer_id)
     if bill:
         amount = bill.get("amount")
         late_fee = bill.get("late_fee", 0)
@@ -187,7 +187,7 @@ def plan_upgrade_handler_node(state: AgentState) -> Dict[str, Any]:
     logs.append("[PLANS] Fetching customer plan parameters from SQLite...")
     customer_id = state.get("customer_id", "CUST-9948")
     
-    customer = database.get_customer(customer_id)
+    customer = telecom_db.get_customer(customer_id)
     if customer:
         logs.append(f"[PLANS] SQL RESULT: Current subscription is {customer.get('plan_name')} ({customer.get('speed_tier')}).")
     
@@ -215,7 +215,7 @@ def diagnose_router_node(state: AgentState) -> Dict[str, Any]:
     logs.append(f"[DIAGNOSTIC] Running SQLite line diagnostics check (Attempt {retry + 1})...")
     
     # Read metrics directly from SQLite database
-    telemetry = database.get_router_telemetry(customer_id)
+    telemetry = telecom_db.get_router_telemetry(customer_id)
     if not telemetry:
         # Fallback values
         telemetry = {
@@ -248,13 +248,13 @@ def apply_fix_node(state: AgentState) -> Dict[str, Any]:
         fix_action = "router_reboot"
         logs.append("[ACTION] Sending Remote Command: REBOOT_GATEWAY. Simulating router warm reboot...")
         # Write slightly improved metrics to the SQL DB
-        database.update_router_telemetry(customer_id, snr_db=10.1, packet_loss_pct=5.8, port_status="degraded")
+        telecom_db.update_router_telemetry(customer_id, snr_db=10.1, packet_loss_pct=5.8, port_status="degraded")
         logs.append("[SQL UPDATE] Reboot metrics written to SQLite. SNR: 10.1 dB (Degraded).")
     elif retry == 1:
         fix_action = "port_reset"
         logs.append("[ACTION] Sending Exchange Command: PORT_RESET on physical DSLAM/fiber line switch...")
         # Write fully resolved metrics to the SQL DB
-        database.update_router_telemetry(customer_id, snr_db=19.5, packet_loss_pct=0.05, port_status="normal")
+        telecom_db.update_router_telemetry(customer_id, snr_db=19.5, packet_loss_pct=0.05, port_status="normal")
         logs.append("[SQL UPDATE] Reset port metrics written to SQLite. SNR: 19.5 dB (Normal).")
     else:
         fix_action = "none"

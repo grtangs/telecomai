@@ -5,10 +5,10 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 # Import LangGraph telecom agent logic and database module
 from telecom_agent import create_telecom_graph, AgentState
-import database
+import telecom_db
 
 # Initialize the SQLite database on startup
-database.init_db()
+telecom_db.init_db()
 
 load_dotenv()
 
@@ -19,8 +19,8 @@ MOCK_CUSTOMER_ID = "CUST-9948"
 
 def generate_customer_html(customer_id: str = MOCK_CUSTOMER_ID) -> str:
     """Generates the customer profile HTML dynamically from SQLite."""
-    cust = database.get_customer(customer_id)
-    bill = database.get_bill(customer_id)
+    cust = telecom_db.get_customer(customer_id)
+    bill = telecom_db.get_bill(customer_id)
     
     if not cust:
         return "<div style='color: red; padding: 20px;'>Customer Profile Not Found in SQLite</div>"
@@ -235,10 +235,10 @@ def chatbot_respond(user_message: str, history: list, state: dict):
 
 def clear_session():
     # Reset SQLite database records back to defaults
-    database.reset_db()
+    telecom_db.reset_db()
     
     # Get telemetry default status (representing initial degraded state in DB)
-    default_telemetry = database.get_router_telemetry(MOCK_CUSTOMER_ID)
+    default_telemetry = telecom_db.get_router_telemetry(MOCK_CUSTOMER_ID)
     
     return [], INITIAL_STATE.copy(), generate_telemetry_html(default_telemetry), generate_logs_html(INITIAL_STATE["agent_logs"]), generate_customer_html()
 
@@ -301,7 +301,7 @@ with gr.Blocks(css=custom_css, title="Telecom Autonomic Agent Dashboard") as dem
             
             # Live Modem Diagnostics Panel
             # Read initial state from DB
-            initial_telemetry = database.get_router_telemetry(MOCK_CUSTOMER_ID)
+            initial_telemetry = telecom_db.get_router_telemetry(MOCK_CUSTOMER_ID)
             telemetry_widget = gr.HTML(value=generate_telemetry_html(initial_telemetry))
             
             gr.HTML("<div style='height: 10px;'></div>")

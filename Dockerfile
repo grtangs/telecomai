@@ -24,7 +24,7 @@ COPY --from=build /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application source files
-COPY telecom_agent.py app.py database.py /app/
+COPY telecom_agent.py app.py telecom_db.py /app/
 
 # Expose Cloud Run's default port
 EXPOSE 8080
