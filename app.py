@@ -199,7 +199,8 @@ def chatbot_respond(user_message: str, history: list, state: dict):
         print(f"[CRITICAL ERROR] LangGraph invoke failed: {str(e)}", flush=True)
         traceback.print_exc()
         error_logs = state.get("agent_logs", []) + [f"[ERROR] LangGraph failed: {str(e)}"]
-        fallback_msg = "I encountered an issue querying the model. Please check if your DEEPSEEK_API_KEY is correct."
+        # Expose the error directly in the chat to avoid needing GCP log permissions
+        fallback_msg = f"⚠️ **Connection Failed**:\n\n`{str(e)}`\n\nPlease ensure your `DEEPSEEK_API_KEY` is configured in the Cloud Run Environment Variables."
         if is_dict_format or len(history) == 0:
             history.append({"role": "user", "content": user_message})
             history.append({"role": "assistant", "content": fallback_msg})
