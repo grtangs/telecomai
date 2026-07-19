@@ -91,16 +91,25 @@ def get_llm() -> BaseChatModel:
     api_base = os.environ.get("DEEPSEEK_API_BASE", "https://api.deepseek.com")
     model_name = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
     
-    if api_key and api_key.strip() and not api_key.startswith("your-"):
-        # Since DeepSeek is OpenAI-compatible, we can use ChatOpenAI
+    # Check if a valid API key was loaded
+    has_key = bool(api_key and api_key.strip() and not api_key.startswith("your-"))
+    key_prefix = api_key[:8] + "..." if (has_key and len(api_key) > 8) else "None"
+    
+    print(f"[LLM LOG] Config: model={model_name}, api_base={api_base}, key_present={has_key} ({key_prefix})", flush=True)
+    
+    if has_key:
+        # Since DeepSeek is OpenAI-compatible, we can use ChatOpenAI.
+        # Pass both new base_url/api_key and legacy parameters to guarantee compatibility across langchain-openai versions.
         return ChatOpenAI(
             model=model_name,
+            api_key=api_key,
+            base_url=api_base,
             openai_api_key=api_key,
             openai_api_base=api_base,
             temperature=0.2
         )
     else:
-        print("[LLM INFO] DEEPSEEK_API_KEY not set. Using local MockTelecomLLM for demo.")
+        print("[LLM INFO] DEEPSEEK_API_KEY not set or is template. Using local MockTelecomLLM for demo.", flush=True)
         return MockTelecomLLM()
 
 # --- LANGGRAPH NODE FUNCTIONS ---

@@ -194,7 +194,10 @@ def chatbot_respond(user_message: str, history: list, state: dict):
     try:
         updated_state = agent_graph.invoke(graph_input)
     except Exception as e:
-        # Graceful error handling in case LLM fails
+        # Log error details and print full traceback to Cloud Run container logs
+        import traceback
+        print(f"[CRITICAL ERROR] LangGraph invoke failed: {str(e)}", flush=True)
+        traceback.print_exc()
         error_logs = state.get("agent_logs", []) + [f"[ERROR] LangGraph failed: {str(e)}"]
         fallback_msg = "I encountered an issue querying the model. Please check if your DEEPSEEK_API_KEY is correct."
         if is_dict_format or len(history) == 0:
